@@ -416,27 +416,51 @@ with st.sidebar:
     
     data_dir = ML_DIR / "data" if (ML_DIR / "data").exists() else ROOT_DIR / "data"
     
-    preset_choice = st.radio(
+    # Auto-discover all .pcap and .pcapng files in data_dir
+    discovered_files = sorted(list(data_dir.glob("*.pcap*")), key=lambda f: f.name.lower()) if data_dir.exists() else []
+    file_map = {f.name: f for f in discovered_files}
+    
+    capture_source = st.radio(
         "Select Capture Source:",
-        ["Weak / Deprecated IPsec Capture", "Modern / Strong IPsec Capture", "Upload Custom .PCAP"],
-        index=0
+        ["Choose from Capture Library", "Upload Custom .PCAP"],
+        index=0,
+        key="capture_source_radio"
     )
     
     active_pcap_path = None
     uploaded_name = None
     
-    if preset_choice == "Weak / Deprecated IPsec Capture":
-        p = data_dir / "sample_weak.pcap"
-        if not p.exists():
-            p = data_dir / "sample_ipsec.pcap"
-        active_pcap_path = str(p)
-        uploaded_name = p.name
-    elif preset_choice == "Modern / Strong IPsec Capture":
-        p = data_dir / "sample_strong.pcap"
-        active_pcap_path = str(p)
-        uploaded_name = p.name
+    if capture_source == "Choose from Capture Library":
+        if file_map:
+            def format_pcap_label(filename):
+                size_kb = file_map[filename].stat().st_size / 1024
+                if filename == "sample_weak.pcap":
+                    return f"🔴 {filename} (Deprecated 3DES · {size_kb:.0f} KB)"
+                elif filename == "sample_strong.pcap":
+                    return f"🟢 {filename} (Modern AES-GCM · {size_kb:.0f} KB)"
+                elif filename == "sample_ipsec.pcap":
+                    return f"🟡 {filename} (Standard IPsec · {size_kb:.0f} KB)"
+                else:
+                    return f"📄 {filename} ({size_kb:.1f} KB)"
+            
+            file_names_list = list(file_map.keys())
+            default_idx = file_names_list.index("sample_weak.pcap") if "sample_weak.pcap" in file_names_list else 0
+
+            chosen_file = st.selectbox(
+                f"Available Files in ML/data/ ({len(file_map)} found):",
+                options=file_names_list,
+                index=default_idx,
+                format_func=format_pcap_label,
+                key="library_file_selectbox",
+                help="Add any .pcap or .pcapng file to the ML/data/ folder and it will automatically appear here!"
+            )
+            selected_path = file_map[chosen_file]
+            active_pcap_path = str(selected_path)
+            uploaded_name = chosen_file
+        else:
+            st.info("No .pcap files found in `ML/data/`. Please upload one below.")
     else:
-        uploaded_file = st.file_uploader("Upload .pcap or .pcapng file", type=["pcap", "pcapng"])
+        uploaded_file = st.file_uploader("Upload .pcap or .pcapng file", type=["pcap", "pcapng"], key="custom_pcap_uploader")
         if uploaded_file is not None:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pcap") as tmp:
                 tmp.write(uploaded_file.read())
