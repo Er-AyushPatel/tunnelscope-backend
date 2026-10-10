@@ -1,0 +1,19 @@
+# TunnelScope ML & Pipeline Dependencies
+numpy
+pandas
+scikit-learn
+joblib
+
+# ONNX Export & Runtime
+skl2onnx
+onnx
+onnxruntime
+
+# Analysis, Visualization & Notebooks
+matplotlib
+seaborn
+ipykernel
+
+# Interactive Web Application
+streamlit
+plotly
