@@ -443,6 +443,12 @@ with tab_pcap:
                 cipher_mode=neg.get("encryption_algo")
             )
 
+            # Safely format negotiation metrics
+            rtt = neg.get('ike_handshake_time_ms')
+            rtt_str = f"{rtt:.1f} ms" if isinstance(rtt, (int, float)) else "N/A (ESP-only)"
+            integ = neg.get('integrity') or 'AEAD'
+            cipher_sub = f"{key_bits} bits | {integ}" if key_bits else f"{integ}"
+
             # ── TOP KPI ROW ──────────────────────────────────────
             st.markdown(f"""
             <div class="kpi-container">
@@ -459,12 +465,12 @@ with tab_pcap:
                 <div class="kpi-box">
                     <div class="kpi-label">Negotiated Cipher</div>
                     <div class="kpi-value" style="font-size:1.35rem; color:#818cf8;">{neg.get('encryption_algo', 'UNDETERMINED')}</div>
-                    <div class="kpi-sub">{neg.get('key_length_bits', '')} bits | {neg.get('integrity', 'AEAD')}</div>
+                    <div class="kpi-sub">{cipher_sub}</div>
                 </div>
                 <div class="kpi-box">
                     <div class="kpi-label">Key Exchange Primitive</div>
                     <div class="kpi-value" style="font-size:1.25rem;">{neg.get('dh_group', 'UNDETERMINED')}</div>
-                    <div class="kpi-sub">Handshake RTT: {neg.get('ike_handshake_time_ms', 0):.1f} ms</div>
+                    <div class="kpi-sub">Handshake RTT: {rtt_str}</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -571,7 +577,10 @@ with tab_pcap:
                         col_l, col_r = st.columns([1.2, 1])
                         res_info = sa.get("residue", {})
                         mode = res_info.get("mode", "UNDETERMINED")
-                        conf = res_info.get("confidence", 0.0)
+                        raw_conf = res_info.get("confidence")
+                        conf_val = float(raw_conf) if isinstance(raw_conf, (int, float)) else 0.0
+                        raw_dur = sa.get('duration_sec')
+                        dur_val = float(raw_dur) if isinstance(raw_dur, (int, float)) else 0.0
                         classes = res_info.get("residue_classes", {})
                         
                         with col_l:
@@ -585,11 +594,11 @@ with tab_pcap:
                                 </div>
                                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                                     <span style="font-size:0.85rem; color:#94a3b8;">Lattice Confidence:</span>
-                                    <b>{conf*100:.1f}%</b>
+                                    <b>{conf_val*100:.1f}%</b>
                                 </div>
                                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                                     <span style="font-size:0.85rem; color:#94a3b8;">Flow Duration:</span>
-                                    <span>{sa.get('duration_sec', 0):.2f} sec</span>
+                                    <span>{dur_val:.2f} sec</span>
                                 </div>
                                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                                     <span style="font-size:0.85rem; color:#94a3b8;">Distinct Packet Lengths:</span>
