@@ -556,7 +556,7 @@ with tab_pcap:
             
             with c_gauge:
                 with st.container(border=True):
-                    st.plotly_chart(create_risk_gauge(risk_score, risk_band), use_container_width=True)
+                    st.plotly_chart(create_risk_gauge(risk_score, risk_band), use_container_width=True, key="pcap_risk_gauge_main")
                     st.markdown(f"""
                     <div style="text-align:center; margin-top:-8px;">
                         <span style="font-size:0.8rem; color:#64748b;">Evaluation Basis: <b>Deterministic Rules Engine</b></span>
@@ -645,7 +645,7 @@ with tab_pcap:
                 sas = result.get("sas") or []
                 if sas:
                     sa_tabs = st.tabs([f"SA 0x{sa['spi']}" for sa in sas])
-                    for sa, sa_tab in zip(sas, sa_tabs):
+                    for idx, (sa, sa_tab) in enumerate(zip(sas, sa_tabs)):
                         with sa_tab:
                             col_l, col_r = st.columns([1.2, 1])
                             res_info = sa.get("residue") or {}
@@ -657,7 +657,11 @@ with tab_pcap:
                             classes = res_info.get("residue_classes") or {}
                             
                             with col_l:
-                                st.plotly_chart(create_residue_chart(classes, mode), use_container_width=True)
+                                st.plotly_chart(
+                                    create_residue_chart(classes, mode), 
+                                    use_container_width=True, 
+                                    key=f"residue_chart_{sa.get('spi', 'sa')}_{idx}"
+                                )
                             with col_r:
                                 st.markdown(f"""
                                 <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:18px;">
@@ -706,7 +710,11 @@ with tab_pcap:
                         col_target = c_ml_1 if idx % 2 == 0 else c_ml_2
                         with col_target:
                             st.markdown(f"**SA 0x{r['spi']} — Classified Application: `{lbl.upper()}`**")
-                            st.plotly_chart(create_traffic_bar(classes_list, prob_row), use_container_width=True)
+                            st.plotly_chart(
+                                create_traffic_bar(classes_list, prob_row), 
+                                use_container_width=True, 
+                                key=f"traffic_bar_{r.get('spi', 'r')}_{idx}"
+                            )
 
             # ── EXPORT AUDIT DELIVERABLES ─────────────────────────
             with st.container(border=True):
@@ -721,6 +729,7 @@ with tab_pcap:
                         file_name=f"tunnelscope_report_{Path(uploaded_name).stem}.json",
                         mime="application/json",
                         use_container_width=True,
+                        key="download_json_audit_report",
                     )
                 
                 with col_exp_2:
@@ -744,6 +753,7 @@ Quantum Readiness: {qr_level} ({qr_summary})
                         file_name=f"tunnelscope_summary_{Path(uploaded_name).stem}.md",
                         mime="text/markdown",
                         use_container_width=True,
+                        key="download_md_summary_report",
                     )
 
 # ════════════════════════════════════════════════════════════════════
