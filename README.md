@@ -1,13 +1,9 @@
 # 🛡️ TunnelScope — Network Security Intelligence
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://tunnelscope-2kescnie3gezajhkuhfmbn.streamlit.app/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 > **Inspect encrypted VPN tunnels without breaking privacy or decrypting a single packet.**
-
-### 🌐 Live Demo
-👉 **[Try the Live Web App on Streamlit](https://tunnelscope-2kescnie3gezajhkuhfmbn.streamlit.app/)**
 
 ---
 
@@ -50,44 +46,53 @@ From just the outside, TunnelScope answers three big questions:
 
 ---
 
-## 🧪 Try It Yourself
+## 🧪 How to Run the ML Engine & Dashboard
 
-### Option A: Use the Live Cloud App
-Click here: **[Open Live App](https://tunnelscope-2kescnie3gezajhkuhfmbn.streamlit.app/)**
-* Select any sample capture from the dropdown library.
-* Or upload your own `.pcap` file!
-
-### Option B: Run Locally on Your Machine
+### 1. Run the Dashboard Locally
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/shivanshu1512/TunnelScope.git
 cd TunnelScope
 
-# 2. Install dependencies
-pip install -r requirements.txt
+# 2. Install ML requirements
+pip install -r ML/requirements.txt
 
-# 3. Launch the dashboard
-streamlit run app.py
+# 3. Launch Streamlit
+streamlit run ML/app.py
 ```
 Open your browser at `http://localhost:8501`.
 
+### 2. Run via Command-Line Interface (CLI)
+
+```bash
+# Audit a weak IPsec tunnel capture
+python -m ML.tunnelscope.cli ML/data/sample_weak.pcap --models ML/models
+
+# Audit a modern/strong IPsec tunnel capture
+python -m ML.tunnelscope.cli ML/data/sample_strong.pcap --models ML/models
+```
+
 ---
 
-## 📁 Project Structure
+## 📁 Repository Structure
 
 ```text
 TunnelScope/
-├── app.py                  # Main Streamlit web dashboard
 ├── ML/
-│   ├── app.py              # Cloud mirror entrypoint
-│   ├── data/               # Pre-loaded sample .pcap network captures
+│   ├── app.py              # Streamlit Web Dashboard
+│   ├── data/               # Network captures (.pcap) & datasets (.csv)
 │   ├── models/             # Trained AI models (.joblib & ONNX)
-│   └── tunnelscope/        # Core protocol parsing & math engine
-│       ├── engine.py       # Pure Python PCAP & IKE/ESP parser
-│       ├── feature_extractor.py # Converts packets to AI features
-│       └── cli.py          # Terminal CLI tool
-└── requirements.txt        # Python dependencies
+│   ├── notebooks/          # Model training & research notebooks
+│   ├── src/                # Pipeline training scripts
+│   ├── tools/              # Dataset generation & evaluation tools
+│   ├── tunnelscope/        # Core passive protocol parsing & math engine
+│   │   ├── engine.py       # Pure Python PCAP & IKE/ESP parser
+│   │   ├── feature_extractor.py # Feature extraction pipeline
+│   │   └── cli.py          # Terminal CLI tool
+│   └── requirements.txt    # Python dependencies for ML
+├── README.md               # Documentation
+└── .gitignore              # Git ignore rules
 ```
 
 ---
