@@ -20,6 +20,13 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 from .engine import UNDETERMINED, assess
 from .feature_extractor import BEHAVIOUR_FEATURES, CONFIG_FEATURES, extract
